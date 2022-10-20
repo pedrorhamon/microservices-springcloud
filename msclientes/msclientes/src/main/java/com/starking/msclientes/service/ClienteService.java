@@ -1,5 +1,7 @@
 package com.starking.msclientes.service;
 
+import java.util.Optional;
+
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,10 @@ public class ClienteService {
 
 	@Autowired
 	private ClienteRepository clienteRepository;
+	
+	public Optional<Cliente> getByCPF(String cpf) {
+		return this.clienteRepository.findByCpf(cpf);
+	}
 	
 	@Transactional
 	public Cliente salvar(Cliente cliente) {
