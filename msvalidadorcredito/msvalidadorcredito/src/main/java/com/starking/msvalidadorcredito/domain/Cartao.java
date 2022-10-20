@@ -1,14 +1,14 @@
 package com.starking.msvalidadorcredito.domain;
 
+import java.math.BigDecimal;
+
 import lombok.Data;
 
 @Data
-public class DadosCliente {
-	
-	private Long id;
-	
-	private String nome;
-	
-	private Integer idade;
+public class Cartao {
 
+	private Long id;
+	private String nome;
+	private String bandeira;
+	private BigDecimal limiteBasico;
 }
