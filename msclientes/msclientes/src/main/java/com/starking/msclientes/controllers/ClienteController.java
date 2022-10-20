@@ -15,12 +15,21 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.starking.msclientes.application.representation.ClienteSaveRequest;
 import com.starking.msclientes.service.ClienteService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @RequestMapping("clientes")
+@Slf4j
 public class ClienteController {
 	
 	@Autowired
 	private ClienteService clienteService;
+	
+	@GetMapping
+	public String status() {
+		log.info("Obtendo o status do cliente");
+		return "ok";
+	}
 	
 	@PostMapping
 	public ResponseEntity<?> salvar(@RequestBody ClienteSaveRequest request) {
