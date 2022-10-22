@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.starking.mscartoes.domain.Cartao;
-import com.starking.mscartoes.repository.CartaoRespository;
+import com.starking.mscartoes.infra.mqueue.clients.CartaoRespository;
 
 @Service
 public class CartaoService {

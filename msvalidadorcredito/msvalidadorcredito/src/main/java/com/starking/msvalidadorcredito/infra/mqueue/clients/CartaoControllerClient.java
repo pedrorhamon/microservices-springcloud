@@ -1,4 +1,4 @@
-package com.starking.msvalidadorcredito.repository;
+package com.starking.msvalidadorcredito.infra.mqueue.clients;
 
 import java.util.List;
 

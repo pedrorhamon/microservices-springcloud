@@ -1,4 +1,4 @@
-package com.starking.mscartoes.repository;
+package com.starking.mscartoes.infra.mqueue.clients;
 
 import java.util.List;
 

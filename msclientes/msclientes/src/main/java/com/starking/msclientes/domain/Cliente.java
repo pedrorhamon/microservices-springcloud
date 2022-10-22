@@ -21,7 +21,6 @@ public class Cliente {
 	private Integer idade;
 	
 	public Cliente(String cpf, String nome, Integer idade) {
-		super();
 		this.cpf = cpf;
 		this.nome = nome;
 		this.idade = idade;

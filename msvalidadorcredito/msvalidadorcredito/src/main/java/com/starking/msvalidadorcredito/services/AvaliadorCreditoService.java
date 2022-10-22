@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,27 +21,24 @@ import com.starking.msvalidadorcredito.exception.DadosClienteNotFoundException;
 import com.starking.msvalidadorcredito.exception.ErroComunicacaoMicroServicesException;
 import com.starking.msvalidadorcredito.exception.ErroSolicitacaoCartaoException;
 import com.starking.msvalidadorcredito.infra.mqueue.SolicitacaoEmissaoCartaoPublisher;
-import com.starking.msvalidadorcredito.repository.CartaoControllerClient;
-import com.starking.msvalidadorcredito.repository.ClienteControllerClient;
+import com.starking.msvalidadorcredito.infra.mqueue.clients.CartaoControllerClient;
+import com.starking.msvalidadorcredito.infra.mqueue.clients.ClienteControllerClient;
 
 import feign.FeignException;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AvaliadorCreditoService {
-	
-	@Autowired
-	private ClienteControllerClient clientesClient;
-	
-	@Autowired
-	private CartaoControllerClient cartaoClient;
-	
-	@Autowired
-	private SolicitacaoEmissaoCartaoPublisher publisher;
+
+    private final ClienteControllerClient clientesClient;
+    private final CartaoControllerClient cartoesClient;
+	private final SolicitacaoEmissaoCartaoPublisher publisher;
 
 	public SituacaoCliente obterSituacaoCliente(String cpf)  throws DadosClienteNotFoundException, ErroComunicacaoMicroServicesException {
 		try {			
 			ResponseEntity<DadosCliente> responseEntity = this.clientesClient.dadosCliente(cpf);
-			ResponseEntity<List<CartaoCliente>> cartaoResponse = this.cartaoClient.getCartoesByCliente(cpf);
+			ResponseEntity<List<CartaoCliente>> cartaoResponse = this.cartoesClient.getCartoesByCliente(cpf);
 			
 			return SituacaoCliente.builder()
 					.cliente(responseEntity.getBody())
@@ -58,48 +54,47 @@ public class AvaliadorCreditoService {
 	}
 
 	public RetornoAvaliacaoCliente realizarAvaliacao(String cpf, Long renda)
-			throws DadosClienteNotFoundException, ErroComunicacaoMicroServicesException {
-		try {
-			ResponseEntity<DadosCliente> responseEntity = this.clientesClient.dadosCliente(cpf);
-			ResponseEntity<List<Cartao>> cartoesResponse = cartaoClient.getCartoeRendaAte(renda);
-			
-			
-			List<Cartao> cartoes = cartoesResponse.getBody();
-			var listaCartoesAprovados = cartoes.stream().map(cartao -> {
-				DadosCliente dadosCliente = responseEntity.getBody();
-				
-				BigDecimal limiteBasico = cartao.getLimiteBasico();
-//				BigDecimal rendaBD = BigDecimal.valueOf(renda);
-				BigDecimal idadeBD = BigDecimal.valueOf(dadosCliente.getIdade());
-				var fator = idadeBD.divide(BigDecimal.valueOf(10));
-				BigDecimal limiteAprovado = fator.multiply(limiteBasico);
-				
-				CartaoAprovado aprovado = new CartaoAprovado();
-				aprovado.setCartao(cartao.getNome());
-				aprovado.setBandeira(cartao.getBandeira());
-				aprovado.setLimiteAprovado(limiteAprovado);
-				
-				return aprovado;
-			}).collect(Collectors.toList());
-			
-			return new RetornoAvaliacaoCliente(listaCartoesAprovados);
-			
-		} catch (FeignException.FeignClientException e) {
-			int status = e.status();
-			if (HttpStatus.NOT_FOUND.value() == status) {
-				throw new DadosClienteNotFoundException();
-			}
-			throw new ErroComunicacaoMicroServicesException(e.getMessage(), status);
-		}
-	}
+            throws DadosClienteNotFoundException, ErroComunicacaoMicroServicesException{
+        try{
+            ResponseEntity<DadosCliente> dadosClienteResponse = clientesClient.dadosCliente(cpf);
+            ResponseEntity<List<Cartao>> cartoesResponse = cartoesClient.getCartoeRendaAte(renda);
+
+            List<Cartao> cartoes = cartoesResponse.getBody();
+            var listaCartoesAprovados = cartoes.stream().map(cartao -> {
+
+                DadosCliente dadosCliente = dadosClienteResponse.getBody();
+
+                BigDecimal limiteBasico = cartao.getLimiteBasico();
+                BigDecimal idadeBD = BigDecimal.valueOf(dadosCliente.getIdade());
+                var fator = idadeBD.divide(BigDecimal.valueOf(10));
+                BigDecimal limiteAprovado = fator.multiply(limiteBasico);
+
+                CartaoAprovado aprovado = new CartaoAprovado();
+                aprovado.setCartao(cartao.getNome());
+                aprovado.setBandeira(cartao.getBandeira());
+                aprovado.setLimiteAprovado(limiteAprovado);
+
+                return aprovado;
+            }).collect(Collectors.toList());
+
+            return new RetornoAvaliacaoCliente(listaCartoesAprovados);
+
+        }catch (FeignException.FeignClientException e){
+            int status = e.status();
+            if(HttpStatus.NOT_FOUND.value() == status){
+                throw new DadosClienteNotFoundException();
+            }
+            throw new ErroComunicacaoMicroServicesException(e.getMessage(), status);
+        }
+    }
 	
-	public ProtocoloSolicitacaoCartao solicitarEmissaoCartao(DadosSolicitacaoEmissaoCartao dados) {
-		try {
-			this.publisher.solicitarCartao(dados);
-			var protocolo = UUID.randomUUID().toString();
-			return new ProtocoloSolicitacaoCartao(protocolo);
-		} catch(Exception e) {
-			throw new ErroSolicitacaoCartaoException(e.getMessage());
-		}
-	}
+	public ProtocoloSolicitacaoCartao solicitarEmissaoCartao(DadosSolicitacaoEmissaoCartao dados){
+        try{
+            this.publisher.solicitarCartao(dados);
+            var protocolo = UUID.randomUUID().toString();
+            return new ProtocoloSolicitacaoCartao(protocolo);
+        }catch (Exception e){
+            throw new ErroSolicitacaoCartaoException(e.getMessage());
+        }
+    }
 }

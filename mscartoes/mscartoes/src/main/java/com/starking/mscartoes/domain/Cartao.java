@@ -22,6 +22,7 @@ public class Cartao {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
 	private String nome;
 	
 	@Enumerated(EnumType.STRING)
@@ -31,7 +32,6 @@ public class Cartao {
 	private BigDecimal limiteBasico;
 	
 	public Cartao(String nome, BandeiraCartao bandeira, BigDecimal renda, BigDecimal limiteBasico) {
-		super();
 		this.nome = nome;
 		this.bandeira = bandeira;
 		this.renda = renda;
