@@ -1,27 +1,23 @@
 spring:
-   application:
-      name: msclientes
+  application:
+    name: msclientes
 
 server:
-   port: 0
+  port: 0
 
 eureka:
-   client:
-      service-url:
-         defaultZone: http://ms-eureka-user:123456@localhost:8761/eureka
-   instance:
-      instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
-
-mq:
-   queue:
-      emissao-cartoes: emissao-cartoes
+  client:
+    service-url:
+      defaultZone: http://ms-eureka-user:123456@localhost:8761/eureka
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
 management:
-   endpoints:
-      web:
-         exposure:
-            include: '*'
+  endpoints:
+    web:
+      exposure:
+        include: '*'
 
 logging:
-   file:
-      name: ./logs/log-file.log
+  file:
+    name: ./logs/log-file.log

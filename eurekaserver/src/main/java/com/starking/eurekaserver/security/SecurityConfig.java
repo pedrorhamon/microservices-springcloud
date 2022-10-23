@@ -26,6 +26,7 @@ public class SecurityConfig  {
                 .anyRequest().authenticated()
             )
             .httpBasic();
+        http.csrf().ignoringAntMatchers("/eureka/**");
         return http.build();
     }
 }
