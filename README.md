@@ -1,3 +1,3 @@
 # microservices-springcloud
 
-Serviços da nuvem eureka
+Serviços da nuvem eureka e gatewa
